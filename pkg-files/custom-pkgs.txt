@@ -22,9 +22,7 @@ android-tools
 --AUR INSTALL--
 noisetorch-bin
 plasma5-wallpapers-wallpaper-engine
-brave-bin
 protonup-qt
-brother-dcpt300
 betterdiscord-installer-bin
 gdlauncher-bin
 python-frida
