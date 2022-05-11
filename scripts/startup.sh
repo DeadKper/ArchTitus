@@ -211,7 +211,7 @@ if [[ "$EXT_HOME" == "yes" ]]; then
       set_option ROOT_SIZE $root_size
       break
     else
-      echo -e "\nInvalid root szie, try again.\n"
+      echo -e "\nInvalid root size, try again.\n"
     fi
   done
 fi
