@@ -4,13 +4,18 @@ Contains the steps necessary to configure and pacstrap the install to selected d
 
 # Overview
 
-Creates the btrfs subvolumes. 
+Create default lvm group and it's partitions
 
 
 # Functions
+* [createsubvolumes()](#createsubvolumes)
 * [mountallsubvol()](#mountallsubvol)
 * [subvolumesetup()](#subvolumesetup)
 
+
+## createsubvolumes()
+
+Creates the btrfs subvolumes. 
 
 ## mountallsubvol()
 
