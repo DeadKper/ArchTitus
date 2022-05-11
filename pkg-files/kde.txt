@@ -1,6 +1,7 @@
 plasma-desktop
 sddm
 dolphin
+kwallet-pam
 --END OF MINIMAL INSTALL--
 ark
 audiocd-kio
@@ -37,3 +38,4 @@ spectacle
 systemsettings
 xdg-desktop-portal-kde
 zeroconf-ioslave
+ksshaskpass

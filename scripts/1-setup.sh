@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#github-action genshdoc
+#
+# @file Setup
+# @brief Configures installed system, installs base packages, and creates user. 
 echo -ne "
 -------------------------------------------------------------------------
    █████╗ ██████╗  ██████╗██╗  ██╗████████╗██╗████████╗██╗   ██╗███████╗
@@ -60,12 +64,24 @@ localectl --no-ask-password set-keymap ${KEYMAP}
 sed -i 's/^# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD: ALL/' /etc/sudoers
 sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
 
+# Add no password rights for league of legends helper
+echo "ALL ALL=(root) NOPASSWD: /usr/bin/sysctl -w abi.vsyscall32=0" >> /etc/sudoers
+
 #Add parallel downloading
 sed -i 's/^#ParallelDownloads/ParallelDownloads/' /etc/pacman.conf
 
 #Enable multilib
 sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 pacman -Sy --noconfirm --needed
+
+echo -ne "
+-------------------------------------------------------------------------
+                    Add LVM Hook
+-------------------------------------------------------------------------
+"
+
+sed -i 's/HOOKS=(base udev autodetect modconf block/HOOKS=(base udev autodetect modconf block lvm2/' /etc/mkinitcpio.conf
+mkinitcpio -p linux
 
 echo -ne "
 -------------------------------------------------------------------------
@@ -112,13 +128,23 @@ gpu_type=$(lspci)
 if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
     pacman -S --noconfirm --needed nvidia
 	nvidia-xconfig
+    
 elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
-    pacman -S --noconfirm --needed xf86-video-amdgpu
+    pacman -S --noconfirm --needed vulkan-radeon xf86-video-amdgpu lib32-mesa vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader
 elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
     pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
 elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
-    pacman -S --needed --noconfirm libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
+    pacman -S --noconfirm --needed libva-intel-driver libvdpau-va-gl lib32-vulkan-intel vulkan-intel libva-intel-driver libva-utils lib32-mesa
 fi
+
+# Install common needed libs for games
+pacman -S --noconfirm --needed wine-staging giflib lib32-giflib libpng lib32-libpng libldap lib32-libldap gnutls lib32-gnutls \
+mpg123 lib32-mpg123 openal lib32-openal v4l-utils lib32-v4l-utils libpulse lib32-libpulse libgpg-error \
+lib32-libgpg-error alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib libjpeg-turbo lib32-libjpeg-turbo \
+sqlite lib32-sqlite libxcomposite lib32-libxcomposite libxinerama lib32-libgcrypt libgcrypt lib32-libxinerama \
+ncurses lib32-ncurses opencl-icd-loader lib32-opencl-icd-loader libxslt lib32-libxslt libva lib32-libva gtk3 \
+lib32-gtk3 gst-plugins-base-libs lib32-gst-plugins-base-libs vulkan-icd-loader lib32-vulkan-icd-loader
+
 #SETUP IS WRONG THIS IS RUN
 if ! source $HOME/ArchTitus/configs/setup.conf; then
 	# Loop through user input until the user gives a valid username

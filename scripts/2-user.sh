@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#github-action genshdoc
+#
+# @file User
+# @brief User customizations and AUR package installation.
 echo -ne "
 -------------------------------------------------------------------------
    █████╗ ██████╗  ██████╗██╗  ██╗████████╗██╗████████╗██╗   ██╗███████╗
@@ -52,6 +56,30 @@ if [[ ! $AUR_HELPER == none ]]; then
     $AUR_HELPER -S --noconfirm --needed ${line}
   done
 fi
+
+INSTALLER="sudo pacman"
+
+sed -n '/'$INSTALL_TYPE'/q;p' ~/ArchTitus/pkg-files/custom-pkgs.txt | while read line
+do
+  if [[ ${line} == '--END OF MINIMAL INSTALL--' ]]
+  then
+    # If selected installation type is FULL, skip the --END OF THE MINIMAL INSTALLATION-- line
+    continue
+  fi
+  if [[ ${line} == '--AUR INSTALL--' ]]
+  then
+    # If no AUR helper is selected, skip aur pkgs
+    if [[ $AUR_HELPER == none ]]
+    then
+      break
+    fi
+    # Change to $AUR_HELPER to install AUR pkgs and skip --AUR INSTALL-- line
+    INSTALLER=$AUR_HELPER
+    continue
+  fi
+  echo "INSTALLING: ${line}"
+  $INSTALLER -S --noconfirm --needed ${line}
+done
 
 export PATH=$PATH:~/.local/bin
 

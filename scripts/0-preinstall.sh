@@ -7,7 +7,10 @@
 #  ██║  ██║██║  ██║╚██████╗██║  ██║   ██║   ██║   ██║   ╚██████╔╝███████║
 #  ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚═╝   ╚═╝    ╚═════╝ ╚══════╝
 #-------------------------------------------------------------------------
-
+#github-action genshdoc
+#
+# @file Preinstall
+# @brief Contains the steps necessary to configure and pacstrap the install to selected drive. 
 echo -ne "
 -------------------------------------------------------------------------
    █████╗ ██████╗  ██████╗██╗  ██╗████████╗██╗████████╗██╗   ██╗███████╗
@@ -43,7 +46,7 @@ echo -ne "
                     Installing Prerequisites
 -------------------------------------------------------------------------
 "
-pacman -S --noconfirm --needed gptfdisk btrfs-progs glibc
+pacman -S --noconfirm --needed gptfdisk btrfs-progs glibc lvm2
 echo -ne "
 -------------------------------------------------------------------------
                     Formating Disk
@@ -57,7 +60,16 @@ sgdisk -a 2048 -o ${DISK} # new gpt disk 2048 alignment
 # create partitions
 sgdisk -n 1::+1M --typecode=1:ef02 --change-name=1:'BIOSBOOT' ${DISK} # partition 1 (BIOS Boot Partition)
 sgdisk -n 2::+300M --typecode=2:ef00 --change-name=2:'EFIBOOT' ${DISK} # partition 2 (UEFI Boot Partition)
-sgdisk -n 3::-0 --typecode=3:8300 --change-name=3:'ROOT' ${DISK} # partition 3 (Root), default start, remaining
+if  [[ "${FS}" == "lvm" ]]; then
+    sgdisk -n 3::-0 --typecode=3:8e00 --change-name=3:'LVM' ${DISK} # partition 3 (LVM), default start, remaining
+else
+    if [[ "$EXT_HOME" == "yes" ]]; then
+        sgdisk -n 3::+${ROOT_SIZE}G --typecode=3:8300 --change-name=3:'ROOT' ${DISK} # partition 3 (Root), default start, remaining
+        sgdisk -n 3::-0 --typecode=3:8302 --change-name=3:'HOME' ${DISK} # partition 4 (Home), default start, remaining
+    else
+        sgdisk -n 3::-0 --typecode=3:8300 --change-name=3:'ROOT' ${DISK} # partition 3 (Root), default start, remaining
+    fi
+fi
 if [[ ! -d "/sys/firmware/efi" ]]; then # Checking for bios system
     sgdisk -A 1:set:2 ${DISK}
 fi
@@ -69,21 +81,46 @@ echo -ne "
                     Creating Filesystems
 -------------------------------------------------------------------------
 "
+# Set default variables for lvm installation
+lvmroot="/dev/arch/root"
+lvmhome="/dev/arch/home"
+# @description Create default lvm group and it's partitions
+createlvmgroup () {
+    pvcreate ${partition3}
+    vgcreate arch ${partition3}
+    if  [[ "${EXT_HOME}" == "yes" ]]; then
+        lvcreate --size 64G --name root arch
+        lvcreate --extents 100%FREE --name home arch
+    else
+        lvcreate --extents 100%FREE --name root arch
+    fi
+    modprobe dm_mod
+    vgscan # Just to print the group, not really necessary
+    vgchange -ay
+}
+# @description Creates the btrfs subvolumes. 
 createsubvolumes () {
     btrfs subvolume create /mnt/@
-    btrfs subvolume create /mnt/@home
     btrfs subvolume create /mnt/@var
     btrfs subvolume create /mnt/@tmp
     btrfs subvolume create /mnt/@.snapshots
-}
 
+    if  [[ "${EXT_HOME}" == "no" ]]; then
+        btrfs subvolume create /mnt/@home
+    fi
+}
+# @description Mount all btrfs subvolumes after root has been mounted.
 mountallsubvol () {
-    mount -o ${MOUNT_OPTIONS},subvol=@home ${partition3} /mnt/home
     mount -o ${MOUNT_OPTIONS},subvol=@tmp ${partition3} /mnt/tmp
     mount -o ${MOUNT_OPTIONS},subvol=@var ${partition3} /mnt/var
     mount -o ${MOUNT_OPTIONS},subvol=@.snapshots ${partition3} /mnt/.snapshots
+
+    if  [[ "${EXT_HOME}" == "no" ]]; then
+        mount -o ${MOUNT_OPTIONS},subvol=@home ${partition3} /mnt/home
+    fi
 }
 
+# @description BTRFS subvolulme creation and mounting. 
 subvolumesetup () {
 # create nonroot subvolumes
     createsubvolumes     
@@ -97,25 +134,46 @@ subvolumesetup () {
     mountallsubvol
 }
 
+homesetup () {
+    if [[ "${EXT_HOME}" ]]; then
+        mkfs.ext4 -L HOME ${partition4}
+        mount ${partition4} /mnt/home
+    fi
+}
+
 if [[ "${DISK}" =~ "nvme" ]]; then
-    partition2=${DISK}p2
-    partition3=${DISK}p3
+    nvme="p"
 else
-    partition2=${DISK}2
-    partition3=${DISK}3
+    nvme=""
 fi
 
-if [[ "${FS}" == "btrfs" ]]; then
-    mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
+partition2=${DISK}${nvme}2
+
+if  [[ "${FS}" == "lvm" ]]; then
+    partition3=${lvmroot}
+    partition4=${lvmhome}
+else
+    partition3=${DISK}${nvme}3
+    partition4=${DISK}${nvme}4
+fi
+
+mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
+if  [[ "${FS}" == "lvm" ]]; then
+    createlvmgroup
     mkfs.btrfs -L ROOT ${partition3} -f
     mount -t btrfs ${partition3} /mnt
     subvolumesetup
+    homesetup
+elif [[ "${FS}" == "btrfs" ]]; then
+    mkfs.btrfs -L ROOT ${partition3} -f
+    mount -t btrfs ${partition3} /mnt
+    subvolumesetup
+    homesetup
 elif [[ "${FS}" == "ext4" ]]; then
-    mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
     mkfs.ext4 -L ROOT ${partition3}
     mount -t ext4 ${partition3} /mnt
+    homesetup
 elif [[ "${FS}" == "luks" ]]; then
-    mkfs.vfat -F32 -n "EFIBOOT" ${partition2}
 # enter luks password to cryptsetup and format root partition
     echo -n "${LUKS_PASSWORD}" | cryptsetup -y -v luksFormat ${partition3} -
 # open luks container and ROOT will be place holder 
@@ -145,7 +203,7 @@ echo -ne "
                     Arch Install on Main Drive
 -------------------------------------------------------------------------
 "
-pacstrap /mnt base base-devel linux linux-firmware vim nano sudo archlinux-keyring wget libnewt --noconfirm --needed
+pacstrap /mnt base base-devel linux linux-firmware vim nano lvm2 sudo archlinux-keyring wget libnewt --noconfirm --needed
 echo "keyserver hkp://keyserver.ubuntu.com" >> /mnt/etc/pacman.d/gnupg/gpg.conf
 cp -R ${SCRIPT_DIR} /mnt/root/ArchTitus
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist

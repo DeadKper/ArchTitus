@@ -1,0 +1,34 @@
+--END OF MINIMAL INSTALL--
+linux-zen
+linux-zen-headers
+kdenlive
+steam
+steam-native-runtime
+discord
+keepassxc
+telegram-desktop
+qt5-imageformats
+jre8-openjdk
+jre17-openjdk
+chezmoi
+pavucontrol
+qalculate-gtk
+gnome-system-monitor
+gradle
+wmctrl
+screen
+kdeconnect
+android-tools
+--AUR INSTALL--
+noisetorch-bin
+plasma5-wallpapers-wallpaper-engine
+brave-bin
+protonup-qt
+brother-dcpt300
+betterdiscord-installer-bin
+gdlauncher-bin
+python-frida
+webp-thumbnailer
+linux-steam-integration
+preload
+dropbox

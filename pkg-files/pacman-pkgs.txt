@@ -103,5 +103,6 @@ wine-mono
 winetricks
 zip
 zsh
+zsh-theme-powerlevel10k
 zsh-syntax-highlighting
 zsh-autosuggestions

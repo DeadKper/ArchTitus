@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#github-action genshdoc
+#
+# @file Post-Setup
+# @brief Finalizing installation configurations and cleaning up after script.
 echo -ne "
 -------------------------------------------------------------------------
    █████╗ ██████╗  ██████╗██╗  ██╗████████╗██╗████████╗██╗   ██╗███████╗
@@ -30,6 +34,9 @@ echo -ne "
 if [[ "${FS}" == "luks" ]]; then
 sed -i "s%GRUB_CMDLINE_LINUX_DEFAULT=\"%GRUB_CMDLINE_LINUX_DEFAULT=\"cryptdevice=UUID=${ENCRYPTED_PARTITION_UUID}:ROOT root=/dev/mapper/ROOT %g" /etc/default/grub
 fi
+# set kernel parameter to remember last selected kernel
+sed -i 's/GRUB_DEFAULT=[^"]*/GRUB_DEFAULT=saved/' /etc/default/grub
+sed -i 's/#GRUB_SAVEDEFAULT=[^"]*/GRUB_SAVEDEFAULT=true/' /etc/default/grub
 # set kernel parameter for adding splash screen
 sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="[^"]*/& splash /' /etc/default/grub
 
@@ -102,6 +109,8 @@ systemctl enable NetworkManager.service
 echo "  NetworkManager enabled"
 systemctl enable bluetooth
 echo "  Bluetooth enabled"
+systemctl enable avahi-daemon.service
+echo "  Avahi enabled"
 
 if [[ "${FS}" == "luks" || "${FS}" == "btrfs" ]]; then
 echo -ne "
