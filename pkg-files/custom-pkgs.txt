@@ -19,6 +19,7 @@ wmctrl
 screen
 kdeconnect
 android-tools
+gamescope
 --AUR INSTALL--
 noisetorch-bin
 plasma5-wallpapers-wallpaper-engine
