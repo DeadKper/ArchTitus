@@ -1,6 +1,4 @@
 --END OF MINIMAL INSTALL--
-linux-zen
-linux-zen-headers
 kdenlive
 steam
 steam-native-runtime
@@ -8,8 +6,11 @@ discord
 keepassxc
 telegram-desktop
 qt5-imageformats
-jre8-openjdk
-jre17-openjdk
+jdk8-openjdk
+jdk11-openjdk
+jdk17-openjdk
+openjdk-src
+openjdk-doc
 chezmoi
 pavucontrol
 qalculate-gtk
@@ -20,6 +21,10 @@ screen
 kdeconnect
 android-tools
 gamescope
+nodejs
+neovim
+qjackctl
+open-vm-tools
 --AUR INSTALL--
 noisetorch-bin
 plasma5-wallpapers-wallpaper-engine
@@ -31,3 +36,8 @@ webp-thumbnailer
 linux-steam-integration
 preload
 dropbox
+nvm
+linux-manjaro-xanmod
+linux-manjaro-xanmod-headers
+java-lombok
+vmware-workstation

@@ -26,7 +26,7 @@ bluez-libs
 bluez-utils
 bridge-utils
 btrfs-progs
-celluloid
+vlc
 cmatrix
 code
 cronie
@@ -74,9 +74,9 @@ patch
 picom
 pkgconf
 powerline-fonts
-pulseaudio
-pulseaudio-alsa
-pulseaudio-bluetooth
+pipewire-pulse
+pipewire-jack
+pipewire-alsa
 python-notify2
 python-psutil
 python-pyqt5
