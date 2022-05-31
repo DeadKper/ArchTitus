@@ -24,9 +24,9 @@ gamescope
 nodejs
 neovim
 qjackctl
-open-vm-tools
+libvirt
 --AUR INSTALL--
-noisetorch-bin
+noisetorch
 plasma5-wallpapers-wallpaper-engine
 protonup-qt
 betterdiscord-installer-bin
