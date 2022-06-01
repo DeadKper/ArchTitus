@@ -25,6 +25,9 @@ nodejs
 neovim
 qjackctl
 libvirt
+yakuake
+krita
+electron
 --AUR INSTALL--
 noisetorch
 plasma5-wallpapers-wallpaper-engine
@@ -38,3 +41,4 @@ preload
 dropbox
 nvm
 java-lombok
+guiscrcpy-git
