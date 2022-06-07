@@ -28,6 +28,10 @@ libvirt
 yakuake
 krita
 electron
+thunderbird
+wireguard-tools
+systemd-resolvconf
+typescript
 --AUR INSTALL--
 noisetorch
 plasma5-wallpapers-wallpaper-engine
@@ -42,3 +46,5 @@ dropbox
 nvm
 java-lombok
 guiscrcpy-git
+protonmail-bridge-bin
+visual-studio-code-bin

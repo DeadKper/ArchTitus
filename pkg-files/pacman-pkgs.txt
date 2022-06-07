@@ -30,7 +30,6 @@ bridge-utils
 btrfs-progs
 vlc
 cmatrix
-code
 cronie
 cups
 dialog
